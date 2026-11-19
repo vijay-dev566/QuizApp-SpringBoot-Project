@@ -36,4 +36,9 @@ public class QuestionService {
 		
 		return question;
 	}
+    
+    public String addQuestion(Question question){
+		questionRepository.save(question);
+		return "Question added";
+	}
 }
