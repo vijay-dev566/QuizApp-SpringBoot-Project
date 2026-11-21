@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.telusko.quizapp.Model.QuestionEntity;
 import com.telusko.quizapp.Model.QuestionWrapperEntity;
 import com.telusko.quizapp.Model.QuizEntity;
+import com.telusko.quizapp.Model.ResponseClass;
 import com.telusko.quizapp.service.QuizService;
 
 @RestController
@@ -32,4 +34,19 @@ public class QuizController {
 	public List<QuestionWrapperEntity> getQuizQuestions(@PathVariable Integer Id){
 		return quizService.getQuizQuestions(Id);
 	}
+	//Quiz Result sending
+	@PostMapping("submit/{id}")
+	public Integer result(@PathVariable Integer id, @RequestBody List<ResponseClass> responses) {
+		return quizService.result(id, responses);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 }

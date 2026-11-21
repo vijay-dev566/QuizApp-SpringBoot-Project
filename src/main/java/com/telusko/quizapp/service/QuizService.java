@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.telusko.quizapp.Model.QuestionEntity;
 import com.telusko.quizapp.Model.QuestionWrapperEntity;
 import com.telusko.quizapp.Model.QuizEntity;
+import com.telusko.quizapp.Model.ResponseClass;
 import com.telusko.quizapp.Repository.QuestionRepository;
 import com.telusko.quizapp.Repository.QuizRepository;
 
@@ -40,5 +41,20 @@ public class QuizService {
 			  questionsForUser.add(qw);  
 	  }
 	  return questionsForUser;
+	}
+
+	public Integer result(Integer id, List<ResponseClass> responses) {
+		QuizEntity quiz = quizRepository.findById(id).get();
+		List<QuestionEntity> questions = quiz.getQuestions();
+		int result = 0;
+		int i = 0;
+		for(ResponseClass q : responses) {
+			if(q.getResponse().equals(questions.get(i).getRightAnswer())) {
+				result++;
+			}
+				
+		i++;
+		}
+		return result;
 	}
 }
