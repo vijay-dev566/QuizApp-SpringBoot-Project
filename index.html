@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizMaster - Spring Boot Quiz Application</title>
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="#" class="brand-wrapper" onclick="switchTab('take-quiz'); return false;">
+        <div class="brand-icon">
+          <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">QuizMaster</div>
+          <span class="brand-subtitle">Spring Boot Edition</span>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <div id="backendStatusPill" class="status-pill demo" title="Click to check backend status">
+          <span class="status-dot"></span>
+          <span id="statusText">Checking Backend...</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" data-tab="take-quiz">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      Take Quiz
+    </button>
+    <button class="tab-btn" data-tab="create-quiz">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Create Quiz
+    </button>
+    <button class="tab-btn" data-tab="manage-questions">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+      Question Bank
+      <span class="tab-badge" id="questionsCountBadge">0</span>
+    </button>
+    <button class="tab-btn" data-tab="quizzes-list">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      All Quizzes
+      <span class="tab-badge" id="quizzesCountBadge">0</span>
+    </button>
+  </nav>
+
+  <!-- Main Content Layout -->
+  <main class="main-container">
+
+    <!-- Offline Demo Notice -->
+    <div id="demoModeBanner" class="notice-banner">
+      <div>
+        <strong>Demo Mode Active:</strong> Spring Boot backend is not responding on <code>http://localhost:8080</code>. You can test all features using built-in interactive demo data. Once your Spring Boot server is started, click Retry!
+      </div>
+      <button id="retryConnectionBtn" class="notice-btn">Retry Connection</button>
+    </div>
+
+    <!-- ====================================================================
+         Tab 1: Take / Play Quiz
+         ==================================================================== -->
+    <section id="take-quiz" class="tab-content active">
+
+      <!-- Starter View: Pick a Quiz -->
+      <div id="quizStarterContainer" class="quiz-starter-box">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Available Quizzes</h2>
+              <p class="card-subtitle">Choose a quiz below to test your knowledge</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('create-quiz')">
+              + Build New Quiz
+            </button>
+          </div>
+
+          <div id="quickQuizCards" class="quiz-quick-select">
+            <!-- Dynamic quiz cards rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- Manual Quiz ID Lookup -->
+        <div class="card" style="padding: 1.25rem 1.75rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+            <div>
+              <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem;">Have a specific Quiz ID?</h4>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Enter the ID number to load it directly</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; max-width: 300px; width: 100%;">
+              <input type="number" id="quizIdInput" class="form-control" placeholder="e.g. 1" min="1">
+              <button id="btnLoadQuizById" class="btn btn-primary" style="white-space: nowrap;">
+                Load Quiz
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Quiz Player -->
+      <div id="quizPlayContainer" class="quiz-play-view">
+        <div class="quiz-header-bar">
+          <div>
+            <h2 id="currentQuizTitle" style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);">Quiz Session</h2>
+            <span id="questionCounter" style="font-size: 0.875rem; color: var(--text-muted); font-weight: 600;">Question 1 of 5</span>
+          </div>
+          <button id="exitQuizBtn" class="btn btn-secondary btn-sm">
+            &times; Exit Quiz
+          </button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="quiz-progress-track">
+          <div id="quizProgressBar" class="quiz-progress-fill"></div>
+        </div>
+
+        <!-- Active Question Box -->
+        <div class="question-box">
+          <div id="playCategoryTag" class="question-category-tag">CATEGORY</div>
+          <h3 id="playQuestionText" class="question-text">Question text goes here...</h3>
+
+          <div id="playOptionsList" class="options-list">
+            <!-- Options rendered here -->
+          </div>
+        </div>
+
+        <!-- Quiz Footer Actions -->
+        <div class="quiz-footer-actions">
+          <button id="prevQuestionBtn" class="btn btn-secondary">
+            &larr; Previous
+          </button>
+
+          <div id="questionDotsContainer" class="question-nav-dots">
+            <!-- 1 2 3 4 5 nav dots -->
+          </div>
+
+          <div>
+            <button id="nextQuestionBtn" class="btn btn-primary">
+              Next &rarr;
+            </button>
+            <button id="submitQuizBtn" class="btn btn-success" style="display: none;">
+              Submit Quiz &check;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Result Scorecard -->
+      <div id="quizResultContainer" style="display: none;">
+        <div class="result-card">
+          <div class="score-badge-circle">
+            <span id="finalScoreNum" class="score-num">0</span>
+            <span id="finalTotalNum" class="score-total">out of 0</span>
+          </div>
+
+          <h2 id="resultVerdictTitle" class="result-title">Quiz Completed!</h2>
+          <p id="resultVerdictDesc" class="result-desc">Here is your result breakdown.</p>
+
+          <div class="result-actions">
+            <button id="retakeQuizBtn" class="btn btn-primary">
+              Retake Quiz
+            </button>
+            <button class="btn btn-secondary" onclick="showQuizStarterView()">
+              Choose Another Quiz
+            </button>
+            <button class="btn btn-secondary" onclick="switchTab('create-quiz')">
+              Create New Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ====================================================================
+         Tab 2: Create Quiz
+         ==================================================================== -->
+    <section id="create-quiz" class="tab-content">
+      <div class="card" style="max-width: 680px; margin: 0 auto;">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Generate New Quiz</h2>
+            <p class="card-subtitle">Randomly selects questions matching your category</p>
+          </div>
+        </div>
+
+        <form id="createQuizForm">
+          <div class="form-group">
+            <label class="form-label" for="quizTitle">Quiz Title</label>
+            <input type="text" id="quizTitle" name="quizTitle" class="form-control" placeholder="e.g. Core Java Assessment" required>
+            <div class="form-text">Give your quiz a clear, descriptive name.</div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="createQuizCategory">Category</label>
+              <select id="createQuizCategory" name="quizCategory" class="form-control" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="quizNumQ">Number of Questions</label>
+              <input type="number" id="quizNumQ" name="quizNumQ" class="form-control" value="5" min="1" max="50" required>
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button type="reset" class="btn btn-secondary">Reset</button>
+            <button type="submit" class="btn btn-primary">Generate Quiz</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Tab 3: Manage Question Bank
+         ==================================================================== -->
+    <section id="manage-questions" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Question Bank</h2>
+            <p class="card-subtitle">Browse, filter, and add questions for your quizzes</p>
+          </div>
+          <button id="openAddQuestionModal" class="btn btn-primary btn-sm">
+            + Add New Question
+          </button>
+        </div>
+
+        <div class="table-toolbar">
+          <div class="search-box">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input type="text" id="questionSearchInput" class="form-control" placeholder="Search questions...">
+          </div>
+
+          <div id="categoryFilters" class="category-filter-bar">
+            <!-- Filter chips -->
+          </div>
+        </div>
+
+        <div id="questionsListContainer" class="questions-grid">
+          <!-- Dynamic question cards -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Tab 4: All Quizzes
+         ==================================================================== -->
+    <section id="quizzes-list" class="tab-content">
+      <div class="card-header" style="margin-bottom: 1.5rem;">
+        <div>
+          <h2 class="card-title">All Created Quizzes</h2>
+          <p class="card-subtitle">Select any quiz to play or review</p>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="switchTab('create-quiz')">
+          + Create Quiz
+        </button>
+      </div>
+
+      <div id="quizzesListCards" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+        <!-- Dynamic cards -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       Modal: Add New Question
+       ==================================================================== -->
+  <div id="addQuestionModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 class="modal-title">Add New Question</h3>
+        <button id="closeModalBtn" class="close-btn" aria-label="Close">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <form id="addQuestionForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="qTitle">Question Title</label>
+            <textarea id="qTitle" name="title" class="form-control" rows="2" placeholder="e.g. Which keyword prevents method overriding in Java?" required></textarea>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="opt1">Option 1 (A)</label>
+              <input type="text" id="opt1" name="opt1" class="form-control" placeholder="e.g. static" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="opt2">Option 2 (B)</label>
+              <input type="text" id="opt2" name="opt2" class="form-control" placeholder="e.g. final" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="opt3">Option 3 (C)</label>
+              <input type="text" id="opt3" name="opt3" class="form-control" placeholder="e.g. abstract" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="opt4">Option 4 (D)</label>
+              <input type="text" id="opt4" name="opt4" class="form-control" placeholder="e.g. synchronized" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="correctOpt">Right / Correct Answer</label>
+            <input type="text" id="correctOpt" name="correctOpt" class="form-control" placeholder="Must match one of the options exactly (e.g. final)" required>
+            <div class="form-text">Type the exact answer string matching one of the options above.</div>
+          </div>
+
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label" for="qCategory">Category</label>
+              <input type="text" id="qCategory" name="category" class="form-control" placeholder="e.g. Java, Python, SQL" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="qDifficulty">Difficulty Level</label>
+              <select id="qDifficulty" name="difficulty" class="form-control">
+                <option value="Easy">Easy</option>
+                <option value="Medium" selected>Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="cancelModalBtn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Question</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div><strong>QuizMaster</strong> &bull; Simple & Neat Spring Boot Quiz Application</div>
+  </footer>
+
+  <script src="./js/app.js"></script>
+</body>
+</html>

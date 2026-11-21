@@ -28,8 +28,12 @@ public class QuizService {
 		QuizEntity quiz = new QuizEntity();
 		quiz.setTitle(title);
 		quiz.setQuestions(questions);
-		quizRepository.save(quiz);
-		return "success";
+		QuizEntity saved = quizRepository.save(quiz);
+		return String.valueOf(saved.getId());
+	}
+
+	public List<QuizEntity> getAllQuizzes() {
+		return quizRepository.findAll();
 	}
 
 	public List<QuestionWrapperEntity> getQuizQuestions(Integer Id) {
